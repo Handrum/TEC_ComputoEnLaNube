@@ -1,1 +1,71 @@
+#include <omp.h>
+#include <iostream>
 
+//Elementos (1000) para ejemplificar el proceso
+//N - Será la cantidad de elementos a manejar en los arreglos
+#define N 1000
+//chunk (100) - Será el tamaño que tendrán los pedazos de los arreglos para que cada hilo creado se encargue de esta cantidad de elementos
+#define chunk 100
+//mostrar (10) - Permitirá manejar la cantidad de datos a imprimir
+#define mostrar 10
+
+
+//función que se encarga de imprimir los arreglos
+//El parámetro recibe un apuntador que hace referencia al arreglo que contiene los datos a imprimir
+void imprimeArreglo(float* d);
+
+
+//Eliminar los 'std::' de todos los comandos c
+using namespace std;
+
+//No retorna ningún valor
+int main()
+{
+    //Se declaran 3 arreglos, llamados a, b y c
+    //a y b se le asignan valores aleatorios y c almacena el resultado de la suma de los dos primeros
+    cout << "Sumando Arreglos en paralelo\n";
+    float a[N], b[N], c[N];
+    int i;
+
+    for ( i = 0; i < N; i++)
+    {
+        a[i] = i * 10;
+        b[i] = (i + 3) * 3.7;
+    }
+
+    int pedazos = chunk;
+
+//for paralelo con OpenMP, creación de hilos y ejecución
+//Definición que la instrucción for, se realizará en paralelo por medio de las instrucciones de la librería OpenMP
+//Indicación que los arreglos estarán en un área de memoria compartida para que los diferentes hilos puedan accesar a los valores
+//Indicarle el tamaño de los pedazos que debe tomar cada hilo de los arreglos sin olvidar que la variable i de cada hilo creado
+//Establecer la planificación como estática y le indicas también el tamaño de los pedazos que debe tomar la planificación para cada hilo.
+    #pragma omp parallel for \
+    shared(a,b,c, pedazos) private(i) \
+    schedule(static, pedazos)
+
+    for (i = 0; i < N; i++)
+        c[i] = a[i] + b[i];
+
+//Imprimiendo los arreglos
+//Comprobar los resultados imprimiendo parte de los arreglos a y b así como el resultado de la suma almacenado en el arreglo c
+//La impresión será apoyada por la función imprimeArreglo
+    
+    cout << "Imprimiendo los primeros " << mostrar << "valores del arreglo a: " << endl;
+    imprimeArreglo(a);
+    cout << "Imprimiendo los primeros " << mostrar << "valores del arreglo b: " << endl;
+    imprimeArreglo(b);
+    cout << "Imprimiendo los primeros " << mostrar << "valores del arreglo c: " << endl;
+    imprimeArreglo(c);
+}
+
+//Implementación de la función
+
+void imprimeArreglo(float* d) {
+    for (int x = 0; x < mostrar; x++)
+    {
+        cout << d[x] << "-\t";
+        
+    }
+    cout << endl;
+}
